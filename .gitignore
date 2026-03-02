@@ -1,0 +1,70 @@
+# ===============================
+# Vivado Generated Files
+# ===============================
+
+*.jou
+*.log
+*.str
+*.wdb
+*.cache
+*.hw
+*.runs
+*.sim
+*.ip_user_files
+*.gen
+*.xpr
+*.xcix
+*.dcp
+*.bit
+*.bin
+*.ltx
+*.webtalk
+
+# Vivado project folders
+.vivado/
+.vivado*
+*.srcs/
+
+# Simulation outputs
+sim/waves/
+sim/work/
+
+# ===============================
+# Python
+# ===============================
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# ===============================
+# Operating System Files
+# ===============================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===============================
+# VS Code / Editors
+# ===============================
+
+.vscode/
+.idea/
+
+# ===============================
+# Large datasets (optional)
+# ===============================
+
+data/raw_dataset/
+data/*.zip
+
+# ===============================
+# Temporary files
+# ===============================
+
+*.tmp
+*.bak
+*.swp
