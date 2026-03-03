@@ -163,8 +163,10 @@ module secure_alert_tb;
         arrhythmia_detected = 1; confidence = 200; timestamp = 32'd1000;
         alert_trigger = 1; ck(); alert_trigger = 0;
         wait(alert_valid == 1); ck();
-        $display("  byte_1(plaintext confidence)=0x%02h exp=0x%02h  %s",
-                  alert_byte_1, 8'd200, alert_byte_1===8'd200?"PASS":"FAIL");
+        if (alert_byte_1 === 8'd200)
+            $display("  byte_1(plaintext confidence)=0x%02h exp=0xC8  PASS", alert_byte_1);
+        else
+            $display("  byte_1(plaintext confidence)=0x%02h exp=0xC8  FAIL", alert_byte_1);
         if (alert_byte_1 !== 8'd200) errors++;
         secure_enable = 1;
 

@@ -115,8 +115,10 @@ module config_reg_block_tb;
         if (cfg_threshold !== 8'h60) begin
             $display("  FAIL: threshold=0x%02h exp 0x60", cfg_threshold); errors++;
         end
-        $display("  threshold=0x%02h  %s", cfg_threshold, cfg_threshold==8'h60?"PASS":"FAIL");
-
+        if (cfg_threshold == 8'h60)
+            $display("  threshold=0x%02h  PASS", cfg_threshold);
+       else
+            $display("  threshold=0x%02h  FAIL", cfg_threshold);
         // ── TEST 5: Key override flag ─────────────────────────
         $display("\n[T5] Enable key override (reg 5, bit 0)");
         write_reg(4'd5, 8'h01);  // key_override_en=1

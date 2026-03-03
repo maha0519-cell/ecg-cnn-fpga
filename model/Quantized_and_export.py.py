@@ -6,45 +6,48 @@ OUTPUT_DIR = "../weights/"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 
-def quantize_weights(w):
-    scale = np.max(np.abs(w))
+def quantize_and_save(array, filename):
+    """Quantize to INT8 and save in RTL memory order"""
+    scale = np.max(np.abs(array))
     if scale == 0:
         scale = 1
-    w_q = np.round(w / scale * 127).astype(np.int8)
-    return w_q
-
-def save_hex(array, filename):
-    flat = array.flatten()
+    w_q = np.clip(np.round(array / scale * 127), -128, 127).astype(np.int8)
+    flat = w_q.flatten()
     with open(OUTPUT_DIR + filename, "w") as f:
         for val in flat:
-            if val < 0:
-                val = (1 << 8) + val  # 2's complement
-            f.write(f"{val:02X}\n")
+            f.write(f"{int(val) & 0xFF:02X}\n")
+    print(f"  {filename}: {len(flat)} values, scale={scale:.4f}")
 
-# Loop through layers
 for layer in model.layers:
     weights = layer.get_weights()
+    if len(weights) != 2:
+        continue
+    w, b = weights
 
-    if len(weights) == 2:
-        w, b = weights
+    if "conv1d" in layer.name and layer.filters == 8:
+        # Keras: (5,1,8) → RTL needs [filter][channel][kernel] = (8,1,5)
+        w_rtl = w.transpose(2, 1, 0)   # (5,1,8) → (8,1,5)
+        quantize_and_save(w_rtl, "conv1_w.hex")
+        quantize_and_save(b,     "conv1_b.hex")
+        print(f"  Conv1 weight shape: {w.shape} → transposed to {w_rtl.shape}")
 
-        w_q = quantize_weights(w)
-        b_q = quantize_weights(b)
+    elif "conv1d" in layer.name and layer.filters == 16:
+        # Keras: (5,8,16) → RTL needs [filter][channel][kernel] = (16,8,5)
+        w_rtl = w.transpose(2, 1, 0)   # (5,8,16) → (16,8,5)
+        quantize_and_save(w_rtl, "conv2_w.hex")
+        quantize_and_save(b,     "conv2_b.hex")
+        print(f"  Conv2 weight shape: {w.shape} → transposed to {w_rtl.shape}")
 
-        if "conv1d" in layer.name and layer.filters == 8:
-            save_hex(w_q, "conv1_w.hex")
-            save_hex(b_q, "conv1_b.hex")
+    elif "dense" in layer.name and layer.units == 16:
+        # Keras: (1152,16) → RTL needs [flat_idx][out_idx] = same order ✓
+        quantize_and_save(w, "dense_w.hex")
+        quantize_and_save(b, "dense_b.hex")
+        print(f"  Dense1 weight shape: {w.shape} → no transpose needed")
 
-        elif "conv1d" in layer.name and layer.filters == 16:
-            save_hex(w_q, "conv2_w.hex")
-            save_hex(b_q, "conv2_b.hex")
+    elif "dense" in layer.name and layer.units == 1:
+        # Keras: (16,1) → RTL needs [in][out] = same order ✓
+        quantize_and_save(w, "out_w.hex")
+        quantize_and_save(b, "out_b.hex")
+        print(f"  Out weight shape: {w.shape} → no transpose needed")
 
-        elif "dense" in layer.name and layer.units == 16:
-            save_hex(w_q, "dense_w.hex")
-            save_hex(b_q, "dense_b.hex")
-
-        elif "dense" in layer.name and layer.units == 1:
-            save_hex(w_q, "out_w.hex")
-            save_hex(b_q, "out_b.hex")
-
-print("Quantization and HEX export complete.")
+print("\nQuantization and HEX export complete.")

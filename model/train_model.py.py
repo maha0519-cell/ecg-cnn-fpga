@@ -4,8 +4,8 @@ from tensorflow.keras import layers, models
 from sklearn.model_selection import train_test_split
 
 # Load data
-X_norm = np.load("../data/X_norm.npy")
-y_binary = np.load("../data/y_binary.npy")
+X_norm = np.load("../test_data/X_norm.npy")
+y_binary = np.load("../test_data/y_binary.npy")
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
