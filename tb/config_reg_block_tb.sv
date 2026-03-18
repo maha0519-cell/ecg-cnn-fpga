@@ -75,11 +75,11 @@ module config_reg_block_tb;
         $display("  conv1_en=%0d conv2_en=%0d dense_en=%0d secure_en=%0d",
                   cfg_conv1_en, cfg_conv2_en, cfg_dense_en, cfg_secure_en);
         if (!cfg_conv1_en || !cfg_conv2_en || !cfg_dense_en) begin
-            $display("  FAIL: layer enables not all 1"); errors++;
+            $display("  FAIL: layer enables not all 1"); errors=errors+1;
         end
         $display("  threshold=0x%02h enc_key=0x%02h", cfg_threshold, cfg_enc_key);
-        if (cfg_threshold !== 8'h80) begin $display("  FAIL: threshold != 0x80"); errors++; end
-        if (cfg_enc_key   !== 8'hA5) begin $display("  FAIL: key != 0xA5"); errors++;   end
+        if (cfg_threshold !== 8'h80) begin $display("  FAIL: threshold != 0x80"); errors=errors+1; end
+        if (cfg_enc_key   !== 8'hA5) begin $display("  FAIL: key != 0xA5"); errors=errors+1;   end
         $display("  Defaults: %s", (errors==0)?"PASS":"FAIL");
 
         // ── TEST 2: Write/Read all 16 registers ──────────────
@@ -90,7 +90,7 @@ module config_reg_block_tb;
             read_reg(i[3:0]);
             if (rd_data !== (8'hAA + i)) begin
                 $display("  FAIL reg[%0d]: got 0x%02h exp 0x%02h", i, rd_data, 8'hAA+i);
-                errors++;
+                errors=errors+1;
             end
         end
         $display("  Write/Read all: %s", (errors==0)?"PASS":"FAIL");
@@ -102,7 +102,7 @@ module config_reg_block_tb;
         $display("  conv1=%0d conv2=%0d dense=%0d secure=%0d  %s",
                   cfg_conv1_en, cfg_conv2_en, cfg_dense_en, cfg_secure_en,
                   (cfg_conv1_en && !cfg_conv2_en && cfg_dense_en && !cfg_secure_en)?"PASS":"FAIL");
-        if (!cfg_conv1_en || cfg_conv2_en || !cfg_dense_en || cfg_secure_en) errors++;
+        if (!cfg_conv1_en || cfg_conv2_en || !cfg_dense_en || cfg_secure_en) errors=errors+1;
 
         // Enable secure mode
         write_reg(4'd0, 8'h0F);
